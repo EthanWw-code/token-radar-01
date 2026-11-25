@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token Launch Radar</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <div>
+      <p class="kicker">TOKEN LAUNCH RADAR</p>
+      <h1>Which protocols without a token are worth farming?</h1>
+      <p class="lede">A ranked board of pre-token protocols, scored only from a sealed snapshot of the protocol universe. No prices, no promises — just the value a launch would have, and what it takes to farm it.</p>
+    </div>
+    <dl class="facts">
+      <div><dt>Snapshot</dt><dd id="fact-asof">—</dd></div>
+      <div><dt>Watchlist</dt><dd id="fact-watchlist">—</dd></div>
+      <div><dt>Board rows</dt><dd id="fact-board">—</dd></div>
+      <div><dt>Model</dt><dd id="fact-model">—</dd></div>
+    </dl>
+  </div>
+</header>
+
+<main>
+  <section class="top10" aria-labelledby="top10-h">
+    <h2 id="top10-h">Top 10 by implied launch value</h2>
+    <p class="section-note">The ten launches that would be worth the most, if a token were issued tomorrow at the model's multiple.</p>
+    <ol id="top10" class="cards"></ol>
+  </section>
+
+  <section class="board" aria-labelledby="board-h">
+    <div class="board-head">
+      <div>
+        <h2 id="board-h">The board</h2>
+        <p class="section-note">Every pre-token protocol on the watchlist, plus the early rows below the watchlist floor. Click a row for its model breakdown and farm plan.</p>
+      </div>
+      <p class="count" id="row-count">—</p>
+    </div>
+
+    <form class="filters" id="filters" autocomplete="off">
+      <label>Search
+        <input type="search" id="f-search" placeholder="Protocol name or slug" aria-label="Search by name or slug">
+      </label>
+      <label>Category
+        <select id="f-category" aria-label="Filter by category">
+          <option value="">All categories</option>
+        </select>
+      </label>
+      <label>Chain
+        <select id="f-chain" aria-label="Filter by chain">
+          <option value="">All chains</option>
+        </select>
+      </label>
+      <label>Minimum TVL
+        <select id="f-tvl" aria-label="Filter by minimum TVL">
+          <option value="0">Any TVL</option>
+          <option value="50000000">$50M and up</option>
+          <option value="100000000">$100M and up</option>
+          <option value="500000000">$500M and up</option>
+          <option value="1000000000">$1B and up</option>
+        </select>
+      </label>
+      <label class="check">
+        <input type="checkbox" id="f-watchlist"> Watchlist only
+      </label>
+      <button type="button" id="f-reset">Clear filters</button>
+    </form>
+
+    <div class="table-wrap">
+      <table id="board-table">
+        <thead>
+          <tr>
+            <th><button class="sort" data-sort="rank">Rank</button></th>
+            <th><button class="sort" data-sort="name">Protocol</button></th>
+            <th><button class="sort" data-sort="category">Category</button></th>
+            <th>Chains</th>
+            <th><button class="sort" data-sort="tvl_usd">TVL</button></th>
+            <th><button class="sort" data-sort="change_7d">7d</button></th>
+            <th><button class="sort" data-sort="implied_value_usd">Implied value</button></th>
+          </tr>
+        </thead>
+        <tbody id="board-body"></tbody>
+      </table>
+      <p class="empty" id="board-empty" hidden>No protocol matches these filters. Clear a filter to see the board again.</p>
+    </div>
+  </section>
+
+  <section class="detail" id="detail" aria-labelledby="detail-h" hidden>
+    <div class="detail-head">
+      <div>
+        <p class="kicker" id="detail-rank">—</p>
+        <h2 id="detail-h">—</h2>
+        <p class="detail-sub" id="detail-sub">—</p>
+      </div>
+      <button type="button" id="detail-close">Close</button>
+    </div>
+    <div class="detail-grid">
+      <div>
+        <h3>Why this value</h3>
+        <dl class="breakdown" id="detail-model"></dl>
+        <p class="detail-note" id="detail-formula"></p>
+      </div>
+      <div>
+        <h3>How to farm it</h3>
+        <ol class="steps" id="detail-steps"></ol>
+        <p class="detail-note">Farming is not a guarantee of a token. A protocol may never launch one, and a farm plan is a record of activity, not a promise of a reward. Never pay to claim, and never enter a seed phrase anywhere.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="live" aria-labelledby="live-h">
+    <h2 id="live-h">Live tokens, for comparison</h2>
+    <p class="section-note">Protocols that already trade, by market cap. They are not ranked with the board — the market has already priced them. Use them to sense-check the model's multiples: a live token's market cap against its TVL is the multiple the market actually paid.</p>
+    <div class="table-wrap">
+      <table id="live-table">
+        <thead>
+          <tr><th>Protocol</th><th>Category</th><th>Chains</th><th>TVL</th><th>Market cap</th><th>7d</th></tr>
+        </thead>
+        <tbody id="live-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="model" aria-labelledby="model-h">
+    <h2 id="model-h">How the model works</h2>
+    <p>Implied value follows only from the snapshot's own figures. A launch is priced by what the business is, not only by how big it is:</p>
+    <p class="formula">implied = TVL × category multiple × growth × maturity × chains</p>
+    <dl class="model-facts">
+      <div><dt>Category multiple</dt><dd>Fee-capturing curators and allocators earn the most per dollar of TVL (0.38), then lending and real-world-asset protocols (0.32), then exchanges and yield (0.26), then bridges and staking wrappers (0.16–0.18), whose value is mostly the underlying asset, not a new token. The full table is in the data file.</dd></div>
+      <div><dt>Growth</dt><dd>1 + (7-day TVL change, clamped to −60%…+120%) × 0.6. A protocol growing fast is worth more than one the same size that is shrinking.</dd></div>
+      <div><dt>Maturity</dt><dd>0.6 + min(age in days, 1095) / 1095 × 0.4. Older protocols are steadier; a protocol with no listing date is scored as 365 days old.</dd></div>
+      <div><dt>Chains</dt><dd>1 + min(chain count, 8) × 0.025. A protocol on more chains has wider distribution, so a launch reaches more users.</dd></div>
+      <div><dt>Early rows</dt><dd>The watchlist is the floor, never the ceiling. Pre-token protocols below the $50M floor are added by TVL, up to 160 rows, because the radar exists to find the early ones.</dd></div>
+      <div><dt>Excluded</dt><dd>Centralised exchanges, versioned pools (a name ending in a release), and any protocol that already has a token are not ranked. Wrapped and staked products are not ranked as launches of their own.</dd></div>
+    </dl>
+    <p class="source" id="model-source">—</p>
+  </section>
+</main>
+
+<footer>
+  <p>Token Launch Radar · model <span id="foot-model">—</span> · snapshot <span id="foot-asof">—</span> · built offline, no network, no prices.</p>
+</footer>
+
+<script src="../data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
